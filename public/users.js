@@ -57,7 +57,16 @@ router.get('/register', (req, res)=>{
 });
 
 router.get('/dashboard', (req, res)=>{
+
+  // COMMENTED OUT FOR DEV PURPOSES, UNCOMMENT WHEN FINISHED
+  // if(req.isAuthenticated()){
+  //   res.render('dashboard');
+  // } else {
+  //   res.render('login');
+  // }
+
   res.render('dashboard');
+
 });
 
 //handle post requests
@@ -73,7 +82,6 @@ router.post('/login', async (req, res, next)=>{
     }
 
   })(req, res, next);
-
 });
 
 router.post('/register', async (req, res)=>{
