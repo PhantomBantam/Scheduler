@@ -1,2 +1,22 @@
-<h1>YOU ARE AT DA DASHBOARD MAN</h1>
+<h1>Dashboard</h1>
 
+<div id="create-div">
+  <h3>Create a new Reminder</h3>
+  <input type="text" placeholder="title (this is required)" id="title-in">
+  <textArea placeholder="put your notes here" id="notes-in"></textArea>
+  <input type="date" id="date-in">
+  <input type="time" id="time-in">
+  <button type="submit" id="create-btn"> Create Reminder </button>  
+</div>
+
+<div id="display-div">
+
+  <h3>Your Reminders</h3>
+  <div id="reminders">
+    
+  </div>
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script> 
+<script src="/scripts/index.js"></script>

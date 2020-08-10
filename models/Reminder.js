@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
 let ReminderSchema = mongoose.Schema({
-
+  userEmail: {
+    type: String,
+    required: true
+  },
   title:{
     type: String,
     required: true
@@ -12,6 +15,8 @@ let ReminderSchema = mongoose.Schema({
   },
   remindDate:{
     type: Date,
-    required: false
+    default: null
   }
 });
+
+module.exports = mongoose.model('Reminder', ReminderSchema);

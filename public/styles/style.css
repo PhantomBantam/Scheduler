@@ -1,0 +1,56 @@
+
+#create-div{
+  border:3px #24e32e solid;
+}
+
+#display-div h3{
+  border:3px orange solid;
+  padding: 20px 0px;
+}
+
+
+#create-div input, #create-div textarea, #create-div button {
+  display: block;
+  width: 89%;
+  margin: auto;
+  margin-top: 20px;
+} 
+
+#create-div button{
+  width: 49%;
+  background-color: green;
+  color: white;
+}
+
+
+#create-div textarea{
+  min-height: 100px;
+}
+
+#create-div {
+  text-align: center;
+  padding: 3%;  
+  width: 45%;
+}
+
+#display-div{
+  position: absolute;
+  text-align: center;
+  top: 10%;
+  left: 50%;
+  width: 40%;
+  
+}
+
+.reminder{
+  border: white 1px solid;
+  padding: 20px 20px;
+  text-align: left;
+  width: 70%;
+  margin: 5% 15%;
+}
+
+.reminder h4 {
+  color: orange;
+}
+
