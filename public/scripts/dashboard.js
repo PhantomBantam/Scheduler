@@ -29,6 +29,12 @@ createBtn.addEventListener('click', e=>{
       userEmail: userInfo.user.email
     });
 
+    titleIn.value = '';
+    notesIn.value = ''; 
+    dateIn.value = '';
+    timeIn.value = '';
+
+
   }else{
     alert('You forgot the title!');
   }
@@ -63,6 +69,7 @@ filterSelect.onchange = ()=>{
 
 socket.on('createdReminder', ({message, reminder})=>{
   if(message=='ok'){
+    sentReminds.push(reminder);
     reminderContainer.appendChild(createRemindElem(reminder));
   }else{
     alert(message);
@@ -86,10 +93,12 @@ function createRemindElem(reminder){
   let date = document.createElement('h5');
   let notes = document.createElement('p');
   let check = document.createElement('input');
+  let deleteBtn = document.createElement('button');
   
   check.setAttribute('type', 'checkbox');
   check.checked = !reminder.isActive;
-  
+  deleteBtn.innerHTML = 'Delete Remind';
+
   let finalDate = "¯\\_(ツ)_/¯";
 
   let dateOb = new Date(reminder.remindDate);
@@ -111,10 +120,26 @@ function createRemindElem(reminder){
   date.innerHTML = "Date: " + finalDate;
   notes.innerHTML = reminder.notes;
 
+
   reminderElem.appendChild(title);
   reminderElem.appendChild(date);
   reminderElem.appendChild(notes);
   reminderElem.appendChild(check);
+  reminderElem.appendChild(deleteBtn);
+
+  deleteBtn.addEventListener('click', e=>{
+    let result = confirm('This remind will be deleted forever (a long time!)');
+    if(result){
+      e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+      socket.emit('deleteRemind', 
+        {title: e.target.parentNode.children[0].innerHTML, userEmail: userInfo.user.email});
+      
+      sentReminds = sentReminds.filter(remind=>{
+        return remind.title!=e.target.parentNode.children[0].innerHTML;
+      });
+    }
+  });
+
   let currentDate = new Date();
 
   if(dateOb.getTime()<currentDate.getTime()){

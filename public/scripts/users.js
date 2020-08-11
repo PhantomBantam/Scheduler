@@ -187,6 +187,12 @@ io.on('connection', async socket=>{
     }
   });
 
+  socket.on('deleteRemind', async({title, userEmail})=>{
+    let data = await Reminder.findOneAndDelete({userEmail:userEmail, title:title});
+
+    console.log(data);
+  })
+
   socket.on('refresh', async({changeArr, userEmail})=>{
     function updateReminds(){
       return new Promise((resolve, reject)=>{

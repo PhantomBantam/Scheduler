@@ -62,6 +62,10 @@
   width: 20px;
 }
 
+.reminder button {
+  margin-left: 10%;
+}
+
 #archive-btn{
   position: absolute;
   left: 90%;
