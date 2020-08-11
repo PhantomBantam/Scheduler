@@ -1,5 +1,10 @@
 <h1>Dashboard</h1>
 
+<form action="/users/archives" method="GET" id="archive-btn">
+  <button type="submit">Go To Archives</button>
+</form>
+
+
 <div id="create-div">
   <h3>Create a new Reminder</h3>
   <input type="text" placeholder="title (this is required)" id="title-in">
@@ -11,7 +16,17 @@
 
 <div id="display-div">
 
-  <h3>Your Reminders</h3>
+  <div id="display-actions">
+    <h3>Your Reminders</h3>
+    <button id="refresh-btn">Refresh Reminders</button>
+    <select name="Filter" id="filter-select">
+
+      <option value="active" selected>Active Reminds</option>
+      <option value="all">All Reminds</option>
+      <option value="day">Today's Reminds</option>
+
+    </select>  
+  </div>
   <div id="reminders">
     
   </div>
@@ -19,4 +34,4 @@
 
 
 <script src="/socket.io/socket.io.js"></script> 
-<script src="/scripts/index.js"></script>
+<script src="/scripts/dashboard.js"></script>

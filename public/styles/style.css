@@ -3,11 +3,14 @@
   border:3px #24e32e solid;
 }
 
-#display-div h3{
+#display-actions {
   border:3px orange solid;
   padding: 20px 0px;
 }
 
+#filter-select{
+  margin-left: 30px;
+}
 
 #create-div input, #create-div textarea, #create-div button {
   display: block;
@@ -54,3 +57,13 @@
   color: orange;
 }
 
+.reminder input {
+  height: 20px;
+  width: 20px;
+}
+
+#archive-btn{
+  position: absolute;
+  left: 90%;
+  top: 2%;
+}

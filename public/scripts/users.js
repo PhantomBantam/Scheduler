@@ -58,17 +58,20 @@ router.get('/register', (req, res)=>{
   res.render('register');
 });
 
+router.get('/archives', (req, res)=>{
+  if(req.isAuthenticated()){
+    res.render('archives');
+  } else {
+    res.render('login');
+  }
+});
+
 router.get('/dashboard', (req, res)=>{
-
-  // COMMENTED OUT FOR DEV PURPOSES, UNCOMMENT WHEN FINISHED
-  // if(req.isAuthenticated()){
-  //   res.render('dashboard');
-  // } else {
-  //   res.render('login');
-  // }
-
-  res.render('dashboard');
-
+  if(req.isAuthenticated()){
+    res.render('dashboard');
+  } else {
+    res.render('login');
+  }
 });
 
 //handle post requests
@@ -184,8 +187,23 @@ io.on('connection', async socket=>{
     }
   });
 
+  socket.on('refresh', async({changeArr, userEmail})=>{
+    function updateReminds(){
+      return new Promise((resolve, reject)=>{
+        changeArr.forEach(async ({title, isActive})=>{
+          let data = await Reminder.updateOne({title: title, userEmail:userEmail}, {$set: {
+            isActive: isActive
+          }});
+          resolve();
+        });
+      });
+    }
 
-
+    updateReminds().then(async ()=>{
+      let reminderArr = await Reminder.find({userEmail:userEmail});
+      socket.emit('userReminders', reminderArr);    
+    })
+  });
 });
 
 module.exports = router;

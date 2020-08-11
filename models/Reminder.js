@@ -16,6 +16,10 @@ let ReminderSchema = mongoose.Schema({
   remindDate:{
     type: Date,
     default: null
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   }
 });
 

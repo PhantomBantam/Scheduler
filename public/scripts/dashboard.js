@@ -4,18 +4,20 @@ const notesIn = document.getElementById('notes-in');
 const dateIn = document.getElementById('date-in');
 const timeIn = document.getElementById('time-in');
 const createBtn = document.getElementById('create-btn');
+const refreshBtn = document.getElementById('refresh-btn');
 const reminderContainer = document.getElementById('reminders');
+const filterSelect = document.getElementById('filter-select');
+
 var userInfo = null;
+var sentReminds = [];
 
-
-fetch('http://localhost:3000/users/api/user_data')
+fetch('./api/user_data')
   .then(response=>response.json())
   .then(data=>{
     userInfo = data
     socket.emit('start', userInfo);
   })
   .catch(err=>console.log(err));
-
 
 createBtn.addEventListener('click', e=>{  
   if(titleIn.value.trim() != ''){
@@ -32,6 +34,33 @@ createBtn.addEventListener('click', e=>{
   }
 });
 
+refreshBtn.addEventListener('click', e=>{
+  let changeArr = [];
+  //each arr element constains title of remind
+
+  Array.from(reminderContainer.children).forEach(element=>{
+    changeArr.push({title:element.children[0].innerHTML, isActive: !element.children[3].checked});
+  });
+
+  socket.emit('refresh', {changeArr, userEmail: userInfo.user.email});
+});
+
+filterSelect.onchange = ()=>{
+  switch(filterSelect.options[filterSelect.selectedIndex].value) {
+    case 'all':
+      showAll(sentReminds);
+      break;
+
+    case 'day':
+      showDay(sentReminds);
+      break;
+
+    case 'active':
+      showActive(sentReminds);
+      break;
+  }
+};
+
 socket.on('createdReminder', ({message, reminder})=>{
   if(message=='ok'){
     reminderContainer.appendChild(createRemindElem(reminder));
@@ -41,27 +70,12 @@ socket.on('createdReminder', ({message, reminder})=>{
 })
 
 socket.on('userReminders', reminderArr=>{
-  let elemArr = [];
+  sentReminds = [];
+  filterSelect.value = 'active';
   reminderArr.forEach(reminder=>{
-    elemArr.push(createRemindElem(reminder));
+    sentReminds.push(reminder);
   });
-
-  elemArr = elemArr.sort((x, y)=>{
-    let dateX = convertStringToDate(x.children[1].innerHTML.substr(6));
-    let dateY = convertStringToDate(y.children[1].innerHTML.substr(6));
-
-    if (dateX.getTime() < dateY.getTime()) {
-      return -1;
-    }
-    if (dateX.getTime() > dateY.getTime()) {
-      return 1;
-    }
-    return 0;
-  });
-
-  elemArr.forEach(elem=>{
-    reminderContainer.appendChild(elem);
-  });
+  showActive(reminderArr);
 });
 
 function createRemindElem(reminder){
@@ -71,6 +85,10 @@ function createRemindElem(reminder){
   let title = document.createElement('h4');
   let date = document.createElement('h5');
   let notes = document.createElement('p');
+  let check = document.createElement('input');
+  
+  check.setAttribute('type', 'checkbox');
+  check.checked = !reminder.isActive;
   
   let finalDate = "¯\\_(ツ)_/¯";
 
@@ -96,7 +114,7 @@ function createRemindElem(reminder){
   reminderElem.appendChild(title);
   reminderElem.appendChild(date);
   reminderElem.appendChild(notes);
-
+  reminderElem.appendChild(check);
   let currentDate = new Date();
 
   if(dateOb.getTime()<currentDate.getTime()){
@@ -157,4 +175,65 @@ function getMonthNumFromName(month){
     case 'December':
       return 11;
   }
+}
+
+function sortByDate(elemArr){
+  return elemArr.sort((x, y)=>{
+    let dateX = convertStringToDate(x.children[1].innerHTML.substr(6));
+    let dateY = convertStringToDate(y.children[1].innerHTML.substr(6));
+
+    if (dateX.getTime() < dateY.getTime()) {
+      return -1;
+    }
+    if (dateX.getTime() > dateY.getTime()) {
+      return 1;
+    }
+    return 0;
+  });
+}
+
+function showActive(reminderArr) {
+  let elemArr = [];
+  reminderContainer.innerHTML = '';
+
+  reminderArr.filter(reminder=>reminder.isActive).forEach(reminder=>{
+    elemArr.push(createRemindElem(reminder));
+  });
+
+  sortByDate(elemArr).forEach(elem=>{
+    reminderContainer.appendChild(elem);
+  });
+}
+
+function showAll(reminderArr) {
+  let elemArr = [];
+  reminderContainer.innerHTML = '';
+
+  reminderArr.forEach(reminder=>{
+    elemArr.push(createRemindElem(reminder));
+  });
+
+  sortByDate(elemArr).forEach(elem=>{
+    reminderContainer.appendChild(elem);
+  });
+}
+
+function showDay(reminderArr) {
+  let elemArr = [];
+  reminderContainer.innerHTML = '';
+
+  reminderArr.filter(reminder=>isToday(new Date(reminder.remindDate))).forEach(reminder=>{
+    elemArr.push(createRemindElem(reminder));
+  });
+
+  sortByDate(elemArr).forEach(elem=>{
+    reminderContainer.appendChild(elem);
+  });
+}
+
+function isToday(someDate) {
+  const today = new Date();
+  return someDate.getDate() == today.getDate() &&
+    someDate.getMonth() == today.getMonth() &&
+    someDate.getFullYear() == today.getFullYear()
 }
