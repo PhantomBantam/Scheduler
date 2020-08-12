@@ -8,6 +8,7 @@ const refreshBtn = document.getElementById('refresh-btn');
 const reminderContainer = document.getElementById('reminders');
 const filterSelect = document.getElementById('filter-select');
 
+const shrug = "¯\\_(ツ)_/¯";
 var userInfo = null;
 var sentReminds = [];
 
@@ -69,8 +70,19 @@ filterSelect.onchange = ()=>{
 
 socket.on('createdReminder', ({message, reminder})=>{
   if(message=='ok'){
+    let elemArr = [];
+
     sentReminds.push(reminder);
-    reminderContainer.appendChild(createRemindElem(reminder));
+    reminderContainer.innerHTML = '';
+
+    sentReminds.forEach(reminder=>{
+      elemArr.push(createRemindElem(reminder));
+    });
+  
+    sortByDate(elemArr).forEach(elem=>{
+      reminderContainer.appendChild(elem);
+    });
+  
   }else{
     alert(message);
   }
@@ -99,7 +111,7 @@ function createRemindElem(reminder){
   check.checked = !reminder.isActive;
   deleteBtn.innerHTML = 'Delete Remind';
 
-  let finalDate = "¯\\_(ツ)_/¯";
+  let finalDate = shrug;
 
   let dateOb = new Date(reminder.remindDate);
 
@@ -142,9 +154,12 @@ function createRemindElem(reminder){
 
   let currentDate = new Date();
 
-  if(dateOb.getTime()<currentDate.getTime()){
+  if(dateOb.getTime()<currentDate.getTime() && reminder.remindDate!=null){
     reminderElem.setAttribute('style', 'border: 2px red solid');
-  }  
+
+  } else if(reminder.remindDate==null){
+    reminderElem.setAttribute('style', 'border: 1px yellow solid');
+  }
   return reminderElem;
 }
 
@@ -204,9 +219,15 @@ function getMonthNumFromName(month){
 
 function sortByDate(elemArr){
   return elemArr.sort((x, y)=>{
+    if(x.children[1].innerHTML.substr(6) == shrug){
+      return -1;
+    }else if(y.children[1].innerHTML.substr(6) == shrug){
+      return -1;
+    }
+
+
     let dateX = convertStringToDate(x.children[1].innerHTML.substr(6));
     let dateY = convertStringToDate(y.children[1].innerHTML.substr(6));
-
     if (dateX.getTime() < dateY.getTime()) {
       return -1;
     }
