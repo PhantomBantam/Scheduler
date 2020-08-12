@@ -8,9 +8,57 @@ const refreshBtn = document.getElementById('refresh-btn');
 const reminderContainer = document.getElementById('reminders');
 const filterSelect = document.getElementById('filter-select');
 
+
+const publicVapidKey = "BB5bXr4yikExGVjy8Tu2WEkMm0xjg7xdd6-Jf2M6wqxKSiF-afqE87iHnUl2NAcvEA6CHpcNbfUEunDgQY97UCM";
 const shrug = "¯\\_(ツ)_/¯";
 var userInfo = null;
 var sentReminds = [];
+var workerAvailable = false;
+
+//check if service workers are available in current browser
+if('serviceWorker' in navigator){
+  workerAvailable = true;
+}
+
+async function send(message) {
+  // Register Service Worker
+  const register = await navigator.serviceWorker.register("/worker.js", {
+    scope: "/"
+  });
+
+  // Register Push
+  const subscription = await register.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+  });
+
+  // Send Push Notification
+  await fetch("/users/subscribe", {
+    method: "POST",
+    body: JSON.stringify({
+      subscription:subscription,
+      message: message
+    }),
+    headers: {
+      "content-type": "application/json"
+    }
+  });
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 fetch('./api/user_data')
   .then(response=>response.json())
@@ -82,7 +130,8 @@ socket.on('createdReminder', ({message, reminder})=>{
     sortByDate(elemArr).forEach(elem=>{
       reminderContainer.appendChild(elem);
     });
-  
+    setAlarms([reminder]);
+
   }else{
     alert(message);
   }
@@ -94,6 +143,9 @@ socket.on('userReminders', reminderArr=>{
   reminderArr.forEach(reminder=>{
     sentReminds.push(reminder);
   });
+
+  setAlarms(reminderArr);
+
   showActive(reminderArr);
 });
 
@@ -114,7 +166,6 @@ function createRemindElem(reminder){
   let finalDate = shrug;
 
   let dateOb = new Date(reminder.remindDate);
-
   if(reminder.remindDate != null){
     const year = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(dateOb);
     const month = new Intl.DateTimeFormat('en', { month: 'long' }).format(dateOb);
@@ -282,4 +333,18 @@ function isToday(someDate) {
   return someDate.getDate() == today.getDate() &&
     someDate.getMonth() == today.getMonth() &&
     someDate.getFullYear() == today.getFullYear()
+}
+
+function setAlarms(reminderArr){
+  reminderArr.forEach(remind=>{
+    let date = new Date(remind.remindDate);
+    if(isToday(date)){
+
+      var t = date - new Date();
+
+      setTimeout(function(){
+         send('Reminder: ' + remind.title); 
+        }, t);
+    }
+  });
 }

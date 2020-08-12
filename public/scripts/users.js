@@ -4,11 +4,32 @@ const Reminder = require('../../models/Reminder');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require("bcrypt");
+const webPush = require('web-push');
 const io = require('../../socketio');
 
 const saltRounds = 10;
 
 let router = express.Router();
+
+//These keys identify who sends the push notifications
+const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
+const privateVapidKey = process.env.PRIVATE_VAPID_KEY;
+
+webPush.setVapidDetails('mailto: test@test.test', publicVapidKey, privateVapidKey);
+
+router.post('/subscribe', (req, res)=>{
+  //Get subscription object
+  const subscription = req.body.subscription;
+  const message = req.body.message;
+  console.log(req.body);
+  res.status(201).json({});
+
+  const payload = JSON.stringify({title: message});
+
+  webPush.sendNotification(subscription, payload)
+    .catch(err=>{console.log(err);});
+});
+
 
 passport.use(new LocalStrategy(
   { usernameField: 'email' },
