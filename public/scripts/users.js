@@ -204,7 +204,7 @@ io.on('connection', async socket=>{
           socket.emit('createdReminder', {message: err.message});
         });
     }else{
-      socket.emit('status', {message: 'Reminder with this title already exists!'});
+      socket.emit('createdReminder', {message: 'already exists'});
     }
   });
 

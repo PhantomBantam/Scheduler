@@ -77,13 +77,6 @@ createBtn.addEventListener('click', e=>{
       time: timeIn.value,
       userEmail: userInfo.user.email
     });
-
-    titleIn.value = '';
-    notesIn.value = ''; 
-    dateIn.value = '';
-    timeIn.value = '';
-
-
   }else{
     alert('You forgot the title!');
   }
@@ -120,6 +113,11 @@ socket.on('createdReminder', ({message, reminder})=>{
   if(message=='ok'){
     let elemArr = [];
 
+    titleIn.value = '';
+    notesIn.value = ''; 
+    dateIn.value = '';
+    timeIn.value = '';
+
     sentReminds.push(reminder);
     reminderContainer.innerHTML = '';
 
@@ -132,7 +130,21 @@ socket.on('createdReminder', ({message, reminder})=>{
     });
     setAlarms([reminder]);
 
-  }else{
+  } else if(message == 'already exists'){
+    let newTitle = prompt('This title already exists within your reminds! Please type in a new one.');
+
+    while(newTitle==''){
+      newTitle = prompt('Please type in a new one');
+    }
+
+    socket.emit('createRemind', {
+      title: newTitle, 
+      notes: notesIn.value, 
+      date: dateIn.value, 
+      time: timeIn.value,
+      userEmail: userInfo.user.email
+    });
+  } else{
     alert(message);
   }
 })
