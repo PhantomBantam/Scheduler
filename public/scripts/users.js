@@ -238,6 +238,16 @@ io.on('connection', async socket=>{
     console.log(data);
   })
 
+  socket.on('deleteTemplate', async({title, userEmail})=>{
+    let data = await Template.findOneAndDelete({title:title, userEmail:userEmail});
+
+    if(data!=null){
+      socket.emit('deletedTemplate', {message:'ok', title});
+    }else{
+      socket.emit('deletedTemplate', {message:"404"});
+    }
+  });
+
   socket.on('refresh', async({changeArr, userEmail})=>{
     function updateReminds(){
       return new Promise((resolve, reject)=>{

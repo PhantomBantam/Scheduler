@@ -21,19 +21,20 @@
 
 #create-div button{
   width: 60%;
-
+  color: white;
 }
 
 #create-btn{
   background-color: green;
-  color: white;
 }
 
 #template-btn {
   background-color: #fc7703;
-  color: white;
 }
 
+#delete-template-btn{
+  background-color: red;
+}
 
 #create-div textarea{
   min-height: 100px;

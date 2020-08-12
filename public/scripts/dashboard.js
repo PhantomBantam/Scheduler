@@ -5,6 +5,7 @@ const dateIn = document.getElementById('date-in');
 const timeIn = document.getElementById('time-in');
 const createBtn = document.getElementById('create-btn');
 const templateBtn = document.getElementById('template-btn');
+const deleteTemplateBtn = document.getElementById('delete-template-btn');
 const refreshBtn = document.getElementById('refresh-btn');
 const reminderContainer = document.getElementById('reminders');
 const filterSelect = document.getElementById('filter-select');
@@ -16,6 +17,9 @@ var userInfo = null;
 var sentReminds = [];
 var sentTemplates = [];
 var workerAvailable = false;
+
+
+deleteTemplateBtn.setAttribute('style', 'display:none');
 
 //check if service workers are available in current browser
 if('serviceWorker' in navigator){
@@ -84,7 +88,6 @@ createBtn.addEventListener('click', e=>{
   }
 });
 
-
 templateBtn.addEventListener('click', e=>{  
   if(titleIn.value.trim() != ''){
     socket.emit('createTemplate', {
@@ -94,6 +97,17 @@ templateBtn.addEventListener('click', e=>{
     });
   }else{
     alert('You forgot the title!');
+  }
+});
+
+deleteTemplateBtn.addEventListener('click', e=>{  
+  if(titleIn.value.trim() != ''){
+    socket.emit('deleteTemplate', {
+      title: titleIn.value, 
+      userEmail: userInfo.user.email
+    });
+  }else{
+    alert('You need to specify a title!');
   }
 });
     
@@ -129,10 +143,12 @@ templateSelect.onchange = ()=>{
     if(templateSelect.options[templateSelect.selectedIndex].value == 'No Template'){
       titleIn.value = '';
       notesIn.value = ''; 
+      deleteTemplateBtn.setAttribute('style', 'display:none');
       break;
     }else if(i.title == templateSelect.options[templateSelect.selectedIndex].value){
       titleIn.value = i.title;
       notesIn.value = i.notes; 
+      deleteTemplateBtn.setAttribute('style', 'display:block');
       break;
     }
   }
@@ -185,6 +201,11 @@ socket.on('createdTemplate', ({message, template})=>{
     dateIn.value = '';
     timeIn.value = '';
 
+    sentTemplates.push(template);
+    let option = document.createElement('option');
+    option.innerHTML = template.title;
+    templateSelect.appendChild(option);
+
   } else if(message == 'already exists'){
     let newTitle = prompt('This title already exists within your reminds! Please type in a new one.');
     while(newTitle==''){
@@ -195,6 +216,32 @@ socket.on('createdTemplate', ({message, template})=>{
       notes: notesIn.value, 
       userEmail: userInfo.user.email
     });
+  } else{
+    alert(message);
+  }
+})
+
+socket.on('deletedTemplate', ({message, title})=>{
+  if(message=='ok'){
+    titleIn.value = '';
+    notesIn.value = ''; 
+    dateIn.value = '';
+    timeIn.value = '';
+
+    for (const template of sentTemplates) {
+      if(template.title==title){
+        sentTemplates.splice(sentTemplates.indexOf(template), 1);
+        break;
+      }
+    }
+
+    for (const option of templateSelect) {
+      if(option.innerHTML == title){
+        templateSelect.removeChild(option);
+      }
+    }
+  } else if(message == '404'){
+    alert('Could not find a template with the name: ' + title);
   } else{
     alert(message);
   }
