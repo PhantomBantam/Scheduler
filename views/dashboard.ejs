@@ -7,11 +7,17 @@
 
 <div id="create-div">
   <h3>Create a new Reminder</h3>
+
+  <select name="template-select" id="template-select">
+    <option selected>No Template</option>
+  </select>
+
   <input type="text" placeholder="title (this is required)" id="title-in">
   <textArea placeholder="put your notes here" id="notes-in"></textArea>
   <input type="date" id="date-in">
   <input type="time" id="time-in">
-  <button type="submit" id="create-btn"> Create Reminder </button>  
+  <button id="create-btn"> Create Reminder </button>  
+  <button id="template-btn"> Create as Template </button>  
 </div>
 
 <div id="display-div">

@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../../models/User');
 const Reminder = require('../../models/Reminder');
+const Template = require('../../models/Template');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bcrypt = require("bcrypt");
@@ -156,7 +157,8 @@ io.on('connection', async socket=>{
     //give front end all of their reminds so that they can be displayed
     let user = userInfo.user;
     let reminderArr = await Reminder.find({userEmail:user.email});
-    socket.emit('userReminders', reminderArr);
+    let templateArr = await Template.find({userEmail:user.email});
+    socket.emit('userReminders', {reminderArr, templateArr});
   }); 
 
 
@@ -205,6 +207,28 @@ io.on('connection', async socket=>{
         });
     }else{
       socket.emit('createdReminder', {message: 'already exists'});
+    }
+  });
+
+  socket.on('createTemplate', async ({title, notes, userEmail})=>{
+    let found = await Template.findOne({userEmail: userEmail, title:title});
+    
+    if(found == null){
+      let template = new Template({
+        userEmail: userEmail,
+        title:title,
+        notes: notes,
+      });  
+
+      template.save()
+        .then(data=>{
+          socket.emit('createdTemplate', {message: 'ok', template});
+        })
+        .catch(err=>{
+          socket.emit('createdTemplate', {message: err.message});
+        });
+    }else{
+      socket.emit('createdTemplate', {message: 'already exists'});
     }
   });
 

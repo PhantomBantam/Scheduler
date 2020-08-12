@@ -20,8 +20,17 @@
 } 
 
 #create-div button{
-  width: 49%;
+  width: 60%;
+
+}
+
+#create-btn{
   background-color: green;
+  color: white;
+}
+
+#template-btn {
+  background-color: #fc7703;
   color: white;
 }
 

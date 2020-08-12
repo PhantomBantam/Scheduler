@@ -4,15 +4,17 @@ const notesIn = document.getElementById('notes-in');
 const dateIn = document.getElementById('date-in');
 const timeIn = document.getElementById('time-in');
 const createBtn = document.getElementById('create-btn');
+const templateBtn = document.getElementById('template-btn');
 const refreshBtn = document.getElementById('refresh-btn');
 const reminderContainer = document.getElementById('reminders');
 const filterSelect = document.getElementById('filter-select');
-
+const templateSelect = document.getElementById('template-select');
 
 const publicVapidKey = "BB5bXr4yikExGVjy8Tu2WEkMm0xjg7xdd6-Jf2M6wqxKSiF-afqE87iHnUl2NAcvEA6CHpcNbfUEunDgQY97UCM";
 const shrug = "¯\\_(ツ)_/¯";
 var userInfo = null;
 var sentReminds = [];
+var sentTemplates = [];
 var workerAvailable = false;
 
 //check if service workers are available in current browser
@@ -82,6 +84,19 @@ createBtn.addEventListener('click', e=>{
   }
 });
 
+
+templateBtn.addEventListener('click', e=>{  
+  if(titleIn.value.trim() != ''){
+    socket.emit('createTemplate', {
+      title: titleIn.value, 
+      notes: notesIn.value, 
+      userEmail: userInfo.user.email
+    });
+  }else{
+    alert('You forgot the title!');
+  }
+});
+    
 refreshBtn.addEventListener('click', e=>{
   let changeArr = [];
   //each arr element constains title of remind
@@ -106,6 +121,20 @@ filterSelect.onchange = ()=>{
     case 'active':
       showActive(sentReminds);
       break;
+  }
+};
+
+templateSelect.onchange = ()=>{
+  for (let i of sentTemplates) {
+    if(templateSelect.options[templateSelect.selectedIndex].value == 'No Template'){
+      titleIn.value = '';
+      notesIn.value = ''; 
+      break;
+    }else if(i.title == templateSelect.options[templateSelect.selectedIndex].value){
+      titleIn.value = i.title;
+      notesIn.value = i.notes; 
+      break;
+    }
   }
 };
 
@@ -149,11 +178,41 @@ socket.on('createdReminder', ({message, reminder})=>{
   }
 })
 
-socket.on('userReminders', reminderArr=>{
+socket.on('createdTemplate', ({message, template})=>{
+  if(message=='ok'){
+    titleIn.value = '';
+    notesIn.value = ''; 
+    dateIn.value = '';
+    timeIn.value = '';
+
+  } else if(message == 'already exists'){
+    let newTitle = prompt('This title already exists within your reminds! Please type in a new one.');
+    while(newTitle==''){
+      newTitle = prompt('Please type in a new one');
+    }
+    socket.emit('createTemplate', {
+      title: newTitle, 
+      notes: notesIn.value, 
+      userEmail: userInfo.user.email
+    });
+  } else{
+    alert(message);
+  }
+})
+
+socket.on('userReminders', ({reminderArr, templateArr})=>{
   sentReminds = [];
   filterSelect.value = 'active';
   reminderArr.forEach(reminder=>{
     sentReminds.push(reminder);
+  });
+
+  templateArr.forEach(template=>{
+    sentTemplates.push(template);
+
+    let option = document.createElement('option');
+    option.innerHTML = template.title;
+    templateSelect.appendChild(option);
   });
 
   setAlarms(reminderArr);
