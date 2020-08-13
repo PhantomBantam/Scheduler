@@ -6,7 +6,6 @@ const timeIn = document.getElementById('time-in');
 const createBtn = document.getElementById('create-btn');
 const templateBtn = document.getElementById('template-btn');
 const deleteTemplateBtn = document.getElementById('delete-template-btn');
-const refreshBtn = document.getElementById('refresh-btn');
 const reminderContainer = document.getElementById('reminders');
 const filterSelect = document.getElementById('filter-select');
 const templateSelect = document.getElementById('template-select');
@@ -113,17 +112,6 @@ deleteTemplateBtn.addEventListener('click', e=>{
   }
 });
     
-refreshBtn.addEventListener('click', e=>{
-  let changeArr = [];
-  //each arr element constains title of remind
-
-  Array.from(reminderContainer.children).forEach(element=>{
-    changeArr.push({title:element.children[0].innerHTML, isActive: !element.children[3].checked});
-  });
-
-  socket.emit('refresh', {changeArr, userEmail: userInfo.user.email});
-});
-
 filterSelect.onchange = ()=>{
   switch(filterSelect.options[filterSelect.selectedIndex].value) {
     case 'all':
@@ -136,6 +124,10 @@ filterSelect.onchange = ()=>{
 
     case 'active':
       showActive(sentReminds);
+      break;
+
+    case 'inactive':
+      showInactive(sentReminds);
       break;
   }
 };
@@ -274,6 +266,29 @@ socket.on('userReminders', ({reminderArr, templateArr})=>{
   showActive(reminderArr);
 });
 
+socket.on('updatedActive', ({message, title, isActive})=>{
+  if(message === 'ok'){
+    for(let reminder of sentReminds){
+      if(reminder.title==title){
+        console.log(reminder.title);
+        reminder.isActive = isActive;
+        break;
+      }
+    }
+
+    if((!isActive && filterSelect.options[filterSelect.selectedIndex].value == 'active') || 
+    (isActive && filterSelect.options[filterSelect.selectedIndex].value == 'inactive')){
+      for(let elem of reminderContainer.children){
+        if(elem.children[0].innerHTML == title){
+          reminderContainer.removeChild(elem);
+        }
+      }
+    }
+  }else{
+    alert(message);
+  }
+});
+
 function createRemindElem(reminder){
   let reminderElem = document.createElement('div');
   reminderElem.setAttribute('class', 'reminder');
@@ -326,6 +341,11 @@ function createRemindElem(reminder){
         return remind.title!=e.target.parentNode.children[0].innerHTML;
       });
     }
+  });
+
+  check.addEventListener('click', e=>{
+    socket.emit('updateActive', {isActive: !e.target.checked, title: e.target.parentNode.children[0].innerHTML,
+      userEmail:userInfo.user.email});
   });
 
   let currentDate = new Date();
@@ -419,6 +439,18 @@ function showActive(reminderArr) {
   reminderContainer.innerHTML = '';
 
   reminderArr.filter(reminder=>reminder.isActive).forEach(reminder=>{
+    elemArr.push(createRemindElem(reminder));
+  });
+
+  sortByDate(elemArr).forEach(elem=>{
+    reminderContainer.appendChild(elem);
+  });
+}
+function showInactive(reminderArr) {
+  let elemArr = [];
+  reminderContainer.innerHTML = '';
+
+  reminderArr.filter(reminder=>!reminder.isActive).forEach(reminder=>{
     elemArr.push(createRemindElem(reminder));
   });
 

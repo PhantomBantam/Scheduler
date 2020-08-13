@@ -30,7 +30,6 @@ router.post('/subscribe', (req, res)=>{
     .catch(err=>{console.log(err);});
 });
 
-
 router.use(passport.initialize());
 router.use(passport.session());
 
@@ -222,22 +221,16 @@ io.on('connection', async socket=>{
     }
   });
 
-  socket.on('refresh', async({changeArr, userEmail})=>{
-    function updateReminds(){
-      return new Promise((resolve, reject)=>{
-        changeArr.forEach(async ({title, isActive})=>{
-          let data = await Reminder.updateOne({title: title, userEmail:userEmail}, {$set: {
-            isActive: isActive
-          }});
-          resolve();
-        });
-      });
-    }
+  socket.on('updateActive', async({isActive, title, userEmail})=>{
+    let data = await Reminder.updateOne({title:title, userEmail:userEmail, $set: {
+      isActive:isActive
+    }});
 
-    updateReminds().then(async ()=>{
-      let reminderArr = await Reminder.find({userEmail:userEmail});
-      socket.emit('userReminders', reminderArr);    
-    })
+    if(data){
+      socket.emit('updatedActive', {message:'ok', title, isActive});
+    } else {
+      socket.emit('updatedActive', {message:'err'});
+    }
   });
 });
 
