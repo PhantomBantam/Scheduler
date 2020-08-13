@@ -18,7 +18,6 @@ var sentReminds = [];
 var sentTemplates = [];
 var workerAvailable = false;
 
-
 deleteTemplateBtn.setAttribute('style', 'display:none');
 
 //check if service workers are available in current browser
@@ -102,10 +101,13 @@ templateBtn.addEventListener('click', e=>{
 
 deleteTemplateBtn.addEventListener('click', e=>{  
   if(titleIn.value.trim() != ''){
-    socket.emit('deleteTemplate', {
-      title: titleIn.value, 
-      userEmail: userInfo.user.email
-    });
+    let result = confirm('This remind will be deleted forever (a long time!)');
+    if(result){
+      socket.emit('deleteTemplate', {
+        title: titleIn.value, 
+        userEmail: userInfo.user.email
+      });
+    }
   }else{
     alert('You need to specify a title!');
   }
@@ -240,6 +242,11 @@ socket.on('deletedTemplate', ({message, title})=>{
         templateSelect.removeChild(option);
       }
     }
+
+    if(templateSelect.options[templateSelect.selectedIndex].value == 'No Template'){
+      deleteTemplateBtn.setAttribute('style', 'display:none');
+    }
+
   } else if(message == '404'){
     alert('Could not find a template with the name: ' + title);
   } else{

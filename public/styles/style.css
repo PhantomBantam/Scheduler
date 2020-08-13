@@ -76,8 +76,12 @@
   margin-left: 10%;
 }
 
-#archive-btn{
+#archive-btn, #logout-btn{
   position: absolute;
-  left: 90%;
+  left: 80%;
   top: 2%;
+}
+
+#logout-btn{
+  left: 90%;
 }

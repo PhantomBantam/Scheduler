@@ -10,6 +10,7 @@ var sockets = require('./socketio');
 
 
 require('dotenv').config();
+require('./config/passport');
 
 const app = express();
 const server = http.createServer(app);
