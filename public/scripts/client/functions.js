@@ -68,6 +68,7 @@ function checkBtnListener(e){
 }
 
 function starBtnListener(e){
+  console.log('hit');
   socket.emit('updateStarred', {isStarred: e.target.checked, title: e.target.parentNode.children[0].innerHTML,
     userEmail:userInfo.user.email});
 }
@@ -137,10 +138,8 @@ function getMonthNumFromName(month){
 }
 
 function sortByDate(elemArr){
+  console.log(elemArr);
   return elemArr.sort((x, y)=>{
-
-
-    
     if(x.children[1].innerHTML.substr(6) == shrug || x.children[5].checked){
       return -1;
     }else if(y.children[1].innerHTML.substr(6) == shrug || y.children[5].checked){
@@ -159,55 +158,61 @@ function sortByDate(elemArr){
   });
 }
 
-function showActive(reminderArr) {
+function filterActive(reminderArr) {
   let elemArr = [];
-  reminderContainer.innerHTML = '';
 
   reminderArr.filter(reminder=>reminder.isActive).forEach(reminder=>{
     elemArr.push(createRemindElem(reminder));
   });
-
-  sortByDate(elemArr).forEach(elem=>{
-    reminderContainer.appendChild(elem);
-  });
+  return elemArr;
 }
-function showInactive(reminderArr) {
+function filterInactive(reminderArr) {
   let elemArr = [];
-  reminderContainer.innerHTML = '';
 
   reminderArr.filter(reminder=>!reminder.isActive).forEach(reminder=>{
     elemArr.push(createRemindElem(reminder));
   });
-
-  sortByDate(elemArr).forEach(elem=>{
-    reminderContainer.appendChild(elem);
-  });
+  return elemArr;
 }
 
-function showAll(reminderArr) {
+function filterAll(reminderArr) {
   let elemArr = [];
-  reminderContainer.innerHTML = '';
 
   reminderArr.forEach(reminder=>{
     elemArr.push(createRemindElem(reminder));
   });
 
-  sortByDate(elemArr).forEach(elem=>{
-    reminderContainer.appendChild(elem);
-  });
+  return elemArr;
 }
 
-function showDay(reminderArr) {
+function filterDay(reminderArr) {
   let elemArr = [];
-  reminderContainer.innerHTML = '';
 
   reminderArr.filter(reminder=>isToday(new Date(reminder.remindDate))).forEach(reminder=>{
     elemArr.push(createRemindElem(reminder));
   });
 
-  sortByDate(elemArr).forEach(elem=>{
-    reminderContainer.appendChild(elem);
+  return elemArr;
+}
+
+function filterStarred(reminderArr) {
+  let elemArr = [];
+
+  reminderArr.filter(reminder=>reminder.isStarred).forEach(reminder=>{
+    elemArr.push(createRemindElem(reminder));
   });
+
+  return elemArr;
+}
+
+function filterUnstarred(reminderArr) {
+  let elemArr = [];
+
+  reminderArr.filter(reminder=>!reminder.isStarred).forEach(reminder=>{
+    elemArr.push(createRemindElem(reminder));
+  });
+
+  return elemArr;
 }
 
 function isToday(someDate) {

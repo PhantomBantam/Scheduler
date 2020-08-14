@@ -129,15 +129,15 @@ io.on('connection', async socket=>{
   socket.on('start', async userInfo=>{
     //give front end all of their reminds so that they can be displayed
     let user = userInfo.user;
+    console.log('start');
     let reminderArr = await Reminder.find({userEmail:user.email});
     let templateArr = await Template.find({userEmail:user.email});
     socket.emit('userReminders', {reminderArr, templateArr});
   }); 
 
-
   socket.on('createRemind', async ({title, notes, date, time, userEmail})=>{
     let found = await Reminder.findOne({userEmail: userEmail, title:title});
-    
+    console.log('create');
     if(found == null){
       let reminder;
       if(date != ''){
@@ -185,7 +185,8 @@ io.on('connection', async socket=>{
 
   socket.on('createTemplate', async ({title, notes, userEmail})=>{
     let found = await Template.findOne({userEmail: userEmail, title:title});
-    
+    console.log('create Temp');
+
     if(found == null){
       let template = new Template({
         userEmail: userEmail,
@@ -206,12 +207,13 @@ io.on('connection', async socket=>{
   });
 
   socket.on('deleteRemind', async({title, userEmail})=>{
+    console.log('del');
     let data = await Reminder.findOneAndDelete({userEmail:userEmail, title:title});
-
-    console.log(data);
-  })
+  });
 
   socket.on('deleteTemplate', async({title, userEmail})=>{
+    console.log('del temp');
+
     let data = await Template.findOneAndDelete({title:title, userEmail:userEmail});
 
     if(data!=null){
@@ -222,9 +224,10 @@ io.on('connection', async socket=>{
   });
 
   socket.on('updateActive', async({isActive, title, userEmail})=>{
-    let data = await Reminder.updateOne({title:title, userEmail:userEmail, $set: {
-      isActive:isActive
-    }});
+    console.log('up act');
+    let data = await Reminder.updateOne({title:title, userEmail:userEmail}, {$set: {
+      isActive:isActive}
+    });
 
     if(data){
       socket.emit('updatedActive', {message:'ok', title, isActive});
@@ -234,12 +237,10 @@ io.on('connection', async socket=>{
   });
 
   socket.on('updateStarred', async({isStarred, title, userEmail})=>{
-    let data = await Reminder.updateOne({title:title, userEmail:userEmail, $set: {
+    console.log('up star');
+    let data = await Reminder.updateOne({title:title, userEmail:userEmail}, {$set: {
       isStarred:isStarred
     }});
-
-    let data2 = await Reminder.findOne({title:title, userEmail:userEmail});
-    console.log(data2);
     if(data){
       socket.emit('updatedStarred', {message:'ok', title, isStarred});
     } else {

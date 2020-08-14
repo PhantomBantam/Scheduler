@@ -113,23 +113,38 @@ deleteTemplateBtn.addEventListener('click', e=>{
 });
     
 filterSelect.onchange = ()=>{
+  let elemArr;
+  reminderContainer.innerHTML = '';
+
   switch(filterSelect.options[filterSelect.selectedIndex].value) {
     case 'all':
-      showAll(sentReminds);
+      elemArr = filterAll(sentReminds);
       break;
 
     case 'day':
-      showDay(sentReminds);
+      elemArr = filterDay(sentReminds);
       break;
 
     case 'active':
-      showActive(sentReminds);
+      elemArr = filterActive(sentReminds);
       break;
 
     case 'inactive':
-      showInactive(sentReminds);
+      elemArr = filterInactive(sentReminds);
+      break;
+
+    case 'starred':
+      elemArr = filterStarred(sentReminds);
+      break;
+
+    case 'unstarred':
+      elemArr = filterUnstarred(sentReminds);
       break;
   }
+
+  sortByDate(elemArr).forEach(elem=>{
+    reminderContainer.appendChild(elem);
+  });
 };
 
 templateSelect.onchange = ()=>{
@@ -248,6 +263,9 @@ socket.on('deletedTemplate', ({message, title})=>{
 
 socket.on('userReminders', ({reminderArr, templateArr})=>{
   sentReminds = [];
+
+  console.log(reminderArr);
+
   filterSelect.value = 'active';
   reminderArr.forEach(reminder=>{
     sentReminds.push(reminder);
@@ -262,8 +280,9 @@ socket.on('userReminders', ({reminderArr, templateArr})=>{
   });
 
   setAlarms(reminderArr);
-
-  showActive(reminderArr);
+  sortByDate(filterActive(reminderArr)).forEach(elem=>{
+    reminderContainer.appendChild(elem);
+  });
 });
 
 socket.on('updatedActive', ({message, title, isActive})=>{
@@ -291,12 +310,13 @@ socket.on('updatedActive', ({message, title, isActive})=>{
 socket.on('updatedStarred', ({message, title, isStarred})=>{
   if(message === 'ok'){
     for(let reminder of sentReminds){
+      console.log(reminder.title);
       if(reminder.title==title){
         reminder.isStarred = isStarred;
         break;
       }
     }
-
+    
     // if((!isActive && filterSelect.options[filterSelect.selectedIndex].value == 'active') || 
     // (isActive && filterSelect.options[filterSelect.selectedIndex].value == 'inactive')){
     //   for(let elem of reminderContainer.children){
