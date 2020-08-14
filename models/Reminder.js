@@ -20,6 +20,10 @@ let ReminderSchema = mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  isStarred: {
+    type: Boolean,
+    default: false
   }
 });
 

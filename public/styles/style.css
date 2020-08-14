@@ -85,3 +85,23 @@
 #logout-btn{
   left: 90%;
 }
+
+.star {
+  visibility:hidden;
+  font-size:30px;
+  float: right;
+  
+  cursor:pointer;
+  color: yellow;
+}
+.star:before {
+ content: "\2606";
+ color: yellow;
+ position: absolute;
+ visibility:visible;
+}
+.star:checked:before {
+ content: "\2605";
+ color: yellow;
+ position: absolute;
+}

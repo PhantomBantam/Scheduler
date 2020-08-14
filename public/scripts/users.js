@@ -232,6 +232,20 @@ io.on('connection', async socket=>{
       socket.emit('updatedActive', {message:'err'});
     }
   });
+
+  socket.on('updateStarred', async({isStarred, title, userEmail})=>{
+    let data = await Reminder.updateOne({title:title, userEmail:userEmail, $set: {
+      isStarred:isStarred
+    }});
+
+    let data2 = await Reminder.findOne({title:title, userEmail:userEmail});
+    console.log(data2);
+    if(data){
+      socket.emit('updatedStarred', {message:'ok', title, isStarred});
+    } else {
+      socket.emit('updatedStarred', {message:'err'});
+    }
+  });
 });
 
 module.exports = router;
