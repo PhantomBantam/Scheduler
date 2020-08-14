@@ -2,6 +2,24 @@ function createRemindElem(reminder){
   let reminderElem = document.createElement('div');
   reminderElem.setAttribute('class', 'reminder');
 
+  let {title, date, notes, check, deleteBtn, starBtn} = 
+    generateReminderChildren(reminder, reminderElem);
+
+  reminderElem.appendChild(title);
+  reminderElem.appendChild(date);
+  reminderElem.appendChild(notes);
+  reminderElem.appendChild(check);
+  reminderElem.appendChild(deleteBtn);
+  reminderElem.appendChild(starBtn);
+
+  deleteBtn.addEventListener('click', deleteBtnListener);
+  check.addEventListener('click', checkBtnListener);
+  starBtn.addEventListener('click', starBtnListener);
+
+  return reminderElem;
+}
+
+function generateReminderChildren(reminder, reminderElem){
   let title = document.createElement('h4');
   let date = document.createElement('h5');
   let notes = document.createElement('p');
@@ -14,8 +32,6 @@ function createRemindElem(reminder){
   deleteBtn.innerHTML = 'Delete Remind';
   starBtn.setAttribute('type', 'checkbox');
   starBtn.setAttribute('class', 'star');
-
-  console.log(reminder.isStarred);
   starBtn.checked = reminder.isStarred;
 
   let finalDate = shrug;
@@ -35,18 +51,7 @@ function createRemindElem(reminder){
   date.innerHTML = "Date: " + finalDate;
   notes.innerHTML = reminder.notes;
 
-  reminderElem.appendChild(title);
-  reminderElem.appendChild(date);
-  reminderElem.appendChild(notes);
-  reminderElem.appendChild(check);
-  reminderElem.appendChild(deleteBtn);
-  reminderElem.appendChild(starBtn);
-
-  deleteBtn.addEventListener('click', deleteBtnListener);
-  check.addEventListener('click', checkBtnListener);
-  starBtn.addEventListener('click', starBtnListener);
-
-  return reminderElem;
+  return {title, date, notes, check, deleteBtn, starBtn};
 }
 
 function deleteBtnListener(e){
@@ -68,7 +73,6 @@ function checkBtnListener(e){
 }
 
 function starBtnListener(e){
-  console.log('hit');
   socket.emit('updateStarred', {isStarred: e.target.checked, title: e.target.parentNode.children[0].innerHTML,
     userEmail:userInfo.user.email});
 }
@@ -138,7 +142,6 @@ function getMonthNumFromName(month){
 }
 
 function sortByDate(elemArr){
-  console.log(elemArr);
   return elemArr.sort((x, y)=>{
     if(x.children[1].innerHTML.substr(6) == shrug || x.children[5].checked){
       return -1;

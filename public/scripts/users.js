@@ -129,7 +129,6 @@ io.on('connection', async socket=>{
   socket.on('start', async userInfo=>{
     //give front end all of their reminds so that they can be displayed
     let user = userInfo.user;
-    console.log('start');
     let reminderArr = await Reminder.find({userEmail:user.email});
     let templateArr = await Template.find({userEmail:user.email});
     socket.emit('userReminders', {reminderArr, templateArr});
@@ -137,7 +136,6 @@ io.on('connection', async socket=>{
 
   socket.on('createRemind', async ({title, notes, date, time, userEmail})=>{
     let found = await Reminder.findOne({userEmail: userEmail, title:title});
-    console.log('create');
     if(found == null){
       let reminder;
       if(date != ''){
@@ -185,7 +183,6 @@ io.on('connection', async socket=>{
 
   socket.on('createTemplate', async ({title, notes, userEmail})=>{
     let found = await Template.findOne({userEmail: userEmail, title:title});
-    console.log('create Temp');
 
     if(found == null){
       let template = new Template({
@@ -207,13 +204,10 @@ io.on('connection', async socket=>{
   });
 
   socket.on('deleteRemind', async({title, userEmail})=>{
-    console.log('del');
     let data = await Reminder.findOneAndDelete({userEmail:userEmail, title:title});
   });
 
   socket.on('deleteTemplate', async({title, userEmail})=>{
-    console.log('del temp');
-
     let data = await Template.findOneAndDelete({title:title, userEmail:userEmail});
 
     if(data!=null){
@@ -224,7 +218,6 @@ io.on('connection', async socket=>{
   });
 
   socket.on('updateActive', async({isActive, title, userEmail})=>{
-    console.log('up act');
     let data = await Reminder.updateOne({title:title, userEmail:userEmail}, {$set: {
       isActive:isActive}
     });
@@ -237,7 +230,6 @@ io.on('connection', async socket=>{
   });
 
   socket.on('updateStarred', async({isStarred, title, userEmail})=>{
-    console.log('up star');
     let data = await Reminder.updateOne({title:title, userEmail:userEmail}, {$set: {
       isStarred:isStarred
     }});

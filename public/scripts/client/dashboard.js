@@ -264,8 +264,6 @@ socket.on('deletedTemplate', ({message, title})=>{
 socket.on('userReminders', ({reminderArr, templateArr})=>{
   sentReminds = [];
 
-  console.log(reminderArr);
-
   filterSelect.value = 'active';
   reminderArr.forEach(reminder=>{
     sentReminds.push(reminder);
@@ -310,21 +308,25 @@ socket.on('updatedActive', ({message, title, isActive})=>{
 socket.on('updatedStarred', ({message, title, isStarred})=>{
   if(message === 'ok'){
     for(let reminder of sentReminds){
-      console.log(reminder.title);
       if(reminder.title==title){
         reminder.isStarred = isStarred;
         break;
       }
     }
     
-    // if((!isActive && filterSelect.options[filterSelect.selectedIndex].value == 'active') || 
-    // (isActive && filterSelect.options[filterSelect.selectedIndex].value == 'inactive')){
-    //   for(let elem of reminderContainer.children){
-    //     if(elem.children[0].innerHTML == title){
-    //       reminderContainer.removeChild(elem);
-    //     }
-    //   }
-    // }
+    if((!isStarred && filterSelect.options[filterSelect.selectedIndex].value == 'starred') || 
+    (isStarred && filterSelect.options[filterSelect.selectedIndex].value == 'unstarred')){
+      for(let elem of reminderContainer.children){
+        if(elem.children[0].innerHTML == title){
+          reminderContainer.removeChild(elem);
+        }
+      }
+    }else{
+      reminderContainer.innerHTML = '';
+      sortByDate(filterActive(sentReminds)).forEach(elem=>{
+        reminderContainer.appendChild(elem);
+      });
+    }
   }else{
     alert(message);
   }
