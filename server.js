@@ -8,6 +8,11 @@ const path = require('path');
 const http = require('http');
 var sockets = require('./socketio');
 
+const flash = require('connect-flash');
+const nodemailer = require('nodemailer');
+const async = require('async');
+const crypto = require('crypto');
+
 
 require('dotenv').config();
 require('./config/passport');
@@ -40,6 +45,12 @@ app.use(session({
 app.use(expressLayouts);
 app.set('view engine', 'ejs');
 
+app.use(flash());
+app.use((req, res, next)=>{
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  next();
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 

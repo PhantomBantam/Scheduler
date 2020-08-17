@@ -68,10 +68,13 @@ router.post('/login', async (req, res, next)=>{
   passport.authenticate('local', (err, user, info) => {
     if(info.message == "ok"){
       req.login(user, (err) => {    
-        return res.render('dashboard');
+        res.render('dashboard');
       })  
     } else{
-      return res.send(info.message);
+      res.render('login', {
+        email:userData.email,
+        errors: [{msg: info.message}] 
+      })
     }
 
   })(req, res, next);
@@ -79,31 +82,42 @@ router.post('/login', async (req, res, next)=>{
 
 router.post('/register', async (req, res)=>{
   let userData = req.body;
+  let errors = [];
+
+
   if(userData.password1.length<6){
-    res.send('Error: Password must be at least 6 characters long');
+    errors.push({msg:"Password must be at least 6 characters long"});
   }else if(userData.password1 != userData.password2){
-    res.send('Error: Passwords do not match!');
-
-  }else{
-
-    let found = await User.findOne({email:userData.email});
-    if(found==null){
-      bcrypt.genSalt(saltRounds, (err, salt) => {
-        bcrypt.hash(userData.password1, salt, async (err, hash) => {
-            // Now we can store the password hash in db.
-          let user = new User({
-            email:userData.email,
-            password:hash
-          });
-          let data = await user.save();
-
-          res.redirect("/users/login");
-        });
-      });  
-    }else{
-      res.send('Error: Email already in use!');
-    }
+    errors.push({msg:"Passwords do not match!"});
   }
+
+  let found = await User.findOne({email:userData.email});
+
+  if(found!=null){
+    errors.push({msg:"Email already in use!"});
+  }
+
+  if(errors.length==0){
+    let user = new User({
+      email:userData.email,
+      password:userData.password1
+    });
+
+    //Password hashing is done by schema
+    await user.save();
+    req.flash('success_msg', 'You are registered and can now login');
+    req.flash('error_msg', '');
+
+    res.redirect("/users/login");
+  }else{
+    res.render('register', {
+      errors,
+      email: userData.email,
+      password: userData.password1,
+      password2: userData.password2
+    });  
+  }
+  
 });
 
 router.get('/api/user_data', (req, res)=>{
@@ -119,6 +133,8 @@ router.get('/api/user_data', (req, res)=>{
 router.get('/logout', (req, res)=>{
   req.session.destroy();
   req.logout();
+  req.flash('success_msg', 'You have logged out');
+
   res.redirect('/users/login');
 });
 
