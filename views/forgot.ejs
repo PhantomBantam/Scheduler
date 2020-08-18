@@ -1,0 +1,14 @@
+<h1>Forgot your Password?</h1>
+
+<%- include ("./partials/messages") %>
+
+<form action="/users/forgot" method="POST">
+  <input name="email" type="email" id="email-reg" placeholder="Email" required
+  value="<%= typeof email != 'undefined' ? email : '' %>">
+
+  <button type="submit">Send Reset Email</button>
+</form>
+
+<form action="/users/register" method="GET">
+  <button>Don't have an account?</button>
+</form>

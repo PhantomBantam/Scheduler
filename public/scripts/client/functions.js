@@ -143,18 +143,16 @@ function getMonthNumFromName(month){
 
 function sortByDate(elemArr){
   return elemArr.sort((x, y)=>{
-    if(x.children[1].innerHTML.substr(6) == shrug || x.children[5].checked){
-      if(y.children[5].checked){
-        return 1;
-      }else{
-        return -1;
-      }
-    }else if(y.children[1].innerHTML.substr(6) == shrug || y.children[5].checked){
-      if(x.children[5].checked){
-        return 1;
-      }else{
-        return -1;
-      }
+    if(x.children[5].checked){
+      return -1;
+    }else if(y.children[5].checked){
+      return 1;
+    }
+
+    if(y.children[1].innerHTML.substr(6) == shrug){
+      return -1;
+    }else if(x.children[1].innerHTML.substr(6) == shrug){
+      return -1;
     }
 
     let dateX = convertStringToDate(x.children[1].innerHTML.substr(6));

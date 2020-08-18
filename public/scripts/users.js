@@ -6,6 +6,8 @@ const passport = require('passport');
 const bcrypt = require("bcrypt");
 const webPush = require('web-push');
 const io = require('../../socketio');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const saltRounds = 10;
 
@@ -60,6 +62,22 @@ router.get('/dashboard', (req, res)=>{
   } else {
     res.render('login');
   }
+});
+
+router.get('/forgot', (req, res)=>{
+  res.render('forgot');
+});
+
+router.get('/reset/:token', (req, res)=>{
+  User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+    if (!user) {
+      req.flash('error', 'Password reset token is invalid or has expired.');
+      return res.redirect('/forgot');
+    }
+    res.render('reset', {
+      user: req.user
+    });
+  });
 });
 
 //handle post requests
@@ -120,6 +138,60 @@ router.post('/register', async (req, res)=>{
   
 });
 
+router.post('/forgot', async (req, res)=>{
+  try{
+    let token = await crypto.randomBytes(8).toString('hex');
+    let userInfo = req.body;
+  
+    let data = await User.updateOne({email:userInfo.email}, {$set:{
+      resetPasswordToken:token,
+      resetPasswordExpires: Date.now() + 3600000
+    }})
+
+    if(data.n===0){
+      req.flash('error_msg', 'No account with that email address exists.');
+      return res.redirect('./forgot');
+    }
+
+    let transporter  = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+      }
+    });    
+    
+
+    //ip of local host to act as a domain url
+    let ip = '192.168.1.5' + ':3000';
+
+    var mailOptions = {
+      to: userInfo.email,
+      from: 'thegreatman@great.the',
+      subject: 'Scheduler Password Reset',
+      text: 'You are receiving this because you (or someone else) have requested the reset of the password for your Scheduler account.\n\n' +
+        'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+        'http://' + ip + '/users/reset/' + token + '\n\n' +
+        'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+    };
+
+    transporter.sendMail(mailOptions, (err)=> {
+      if(err){
+        req.flash('error_msg', 'An error has occured.');
+        res.redirect('./forgot');  
+
+        console.log(err);
+      }else{
+        req.flash('success_msg', 'An e-mail has been sent to ' + userInfo.email + ' with further instructions.');
+        res.redirect('./forgot');  
+      }
+    });    
+  }catch(err){
+    console.log(err);
+    res.render('forgot', {errors:[{msg:'An error has occured please try again later.'}]});
+  }
+});
+
 router.get('/api/user_data', (req, res)=>{
   if(req.user === undefined){
     res.json({});
@@ -131,13 +203,11 @@ router.get('/api/user_data', (req, res)=>{
 });
 
 router.get('/logout', (req, res)=>{
-  req.session.destroy();
   req.logout();
   req.flash('success_msg', 'You have logged out');
 
   res.redirect('/users/login');
 });
-
 
 //socket.io handles
 io.on('connection', async socket=>{

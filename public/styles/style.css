@@ -105,3 +105,7 @@
  color: yellow;
  position: absolute;
 }
+
+button {
+  margin-top: 3%;
+}
