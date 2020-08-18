@@ -2,8 +2,12 @@
 
 <%- include ("./partials/messages") %>
 
-<form action="/users/forgot" method="POST">
-  <input name="password" type="password" id="password-log" placeholder="Password" required>
+<form method="POST">
+  <input name="password1" type="password" id="password-reg" placeholder="Password" required
+  value="<%= typeof password != 'undefined' ? password : '' %>">
+
+  <input name="password2" type="password" id="comf-password-reg" placeholder="Comfirm Password" required
+  value="<%= typeof password2 != 'undefined' ? password2 : '' %>">
   <button type="submit">Reset Password</button>
 </form>
 

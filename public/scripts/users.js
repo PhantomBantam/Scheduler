@@ -71,11 +71,11 @@ router.get('/forgot', (req, res)=>{
 router.get('/reset/:token', (req, res)=>{
   User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
     if (!user) {
-      req.flash('error', 'Password reset token is invalid or has expired.');
-      return res.redirect('/forgot');
+      req.flash('error_msg', 'Password reset token is invalid or has expired.');
+      return res.redirect('/users/forgot');
     }
     res.render('reset', {
-      user: req.user
+      user: req.user  
     });
   });
 });
@@ -189,6 +189,47 @@ router.post('/forgot', async (req, res)=>{
   }catch(err){
     console.log(err);
     res.render('forgot', {errors:[{msg:'An error has occured please try again later.'}]});
+  }
+});
+
+router.post('/reset/:token', async (req, res)=>{
+  try{
+    var SALT_FACTOR = 5;
+    let errors = [];
+
+    if(req.body.password1.length<6){
+      errors.push({msg:"Password must be at least 6 characters long"});
+    }else if(req.body.password1 != req.body.password2){
+      errors.push({msg:"Passwords do not match!"});
+    }
+    
+    if(errors.length==0){
+      bcrypt.genSalt(SALT_FACTOR, function(err, salt) {
+        bcrypt.hash(req.body.password1, salt, async function(err, hash) {
+  
+          if(!err){
+            let data = await User.updateOne({ resetPasswordToken: req.params.token, 
+              resetPasswordExpires: { $gt: Date.now() }}, {$set:{
+                password:hash,
+                resetPasswordToken:undefined,
+                resetPasswordExpires:undefined
+              }});
+            if (data.n === 0) {
+              req.flash('error', 'Password reset token is invalid or has expired.');
+              return res.redirect('back');
+            }
+        
+            req.flash('success_msg', 'Success! Your password has been changed.');
+            res.redirect('/users/login');
+          }
+        });
+      });  
+    }else{
+      req.flash('error_msg', errors[0].msg);
+      res.redirect('/users/reset/' + req.params.token);
+    }
+  }catch(err){
+    res.render('reset', {errors:[{msg:'An error has occured please try again later.'}]});
   }
 });
 
