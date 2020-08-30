@@ -86,7 +86,7 @@ router.post('/login', async (req, res, next)=>{
   passport.authenticate('local', (err, user, info) => {
     if(info.message == "ok"){
       req.login(user, (err) => {    
-        res.render('dashboard');
+        res.render('dashboard', );
       })  
     } else{
       res.render('login', {

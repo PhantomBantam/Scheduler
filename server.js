@@ -9,10 +9,6 @@ const http = require('http');
 var sockets = require('./socketio');
 
 const flash = require('connect-flash');
-const nodemailer = require('nodemailer');
-const async = require('async');
-const crypto = require('crypto');
-
 
 require('dotenv').config();
 require('./config/passport');
